@@ -1,73 +1,104 @@
-# 安全版 Telegram Bot 自動化 Python 模板
+# Secure Telegram Bot & Dispatch System Template
 
-這是一個安全、可擴展的 Python 模板，用於快速啟動 Telegram 機器人，並將敏感的 Token 資訊安全地存放在本地。
+This project provides a secure and scalable Python template for quickly launching Telegram bots and a backend dispatch system for order processing and revenue splitting. It is designed to keep sensitive tokens and credentials stored safely in local environment files.
 
-此模板專為在 Termux、Pydroid 3 或任何標準 Python 環境中執行而設計。
+This template is designed to run in any standard Python environment, including servers, development machines, Termux, or Pydroid 3.
 
-## ✨ 功能亮點
+## ✨ Features
 
-- **安全**：Bot Token 等敏感設定儲存在本地 `config.json`，並已加入根目錄的 `.gitignore`，避免外洩到公開倉庫。
-- **可擴展**：輕鬆在 `config.json` 中新增或移除機器人，無需修改程式碼。
-- **非同步**：使用 `asyncio` 進行非同步操作，效能更佳，適合處理多個機器人或高負載任務。
-- **易於部署**：包含 `requirements.txt`，一鍵安裝所有依賴。
+- **Secure by Default**: Sensitive data like Bot Tokens and API keys are stored locally in a `.env` file, which is ignored by Git to prevent accidental exposure.
+- **Scalable Bot Management**: Easily add or remove bots by editing the `config.json` file without changing the code.
+- **Asynchronous Bot**: The `main.py` bot uses `asyncio` for better performance, suitable for handling multiple bots or high-load tasks.
+- **Dispatch & Revenue System**: A complete Flask-based backend (`dispatch_system.py`) to handle webhooks, process orders, and automatically split revenue.
+- **Payout Management**: Includes endpoints to list pending payouts and generate CSV files for batch bank transfers.
+- **Easy Deployment**: Comes with a `requirements.txt` file for one-click dependency installation.
 
-## 🚀 快速啟動
+## 🚀 Quick Start
 
-請依照以下步驟來設定並執行你的機器人：
+Follow these steps to set up and run the bot and the dispatch system.
 
-### 1. 複製並設定 `config.json`
+### 1. Install Dependencies
 
-本目錄提供了一個範例設定檔 `config.json.example`。請先將其複製一份並命名為 `config.json`。
-
-```bash
-cp config.json.example config.json
-```
-
-然後，編輯 `config.json`，將其中的 placeholder token 換成你自己的真實 Bot Token。
-
-```json
-{
-    "StormHawk_bot": "8337263103:AAGIUzrl9pb2rnviTCR7MZxDtJErSdJw0AY",
-    "StormMedic_bot": "8485555463:AAGnou_FJyvlSsmMTOgCBpcFMcuhtBo2m2Y"
-}
-```
-
-### 2. 安裝依賴套件
-
-建議在虛擬環境中安裝。
+It is highly recommended to use a virtual environment.
 
 ```bash
-# 建立虛擬環境 (可選，但建議)
+# Create and activate a virtual environment (optional but recommended)
 python -m venv .venv
-source .venv/bin/activate  # 在 Windows 上是 `.venv\Scripts\activate`
+source .venv/bin/activate  # On Windows, use: .venv\Scripts\activate
 
-# 安裝依賴
+# Install all required packages
 pip install -r requirements.txt
 ```
 
-### 3. 修改發送目標
+### 2. Configure the Services
 
-打開 `main.py`，找到 `TARGET_CHAT_ID` 這個變數，將其值從 `'@your_channel_or_user'` 改成你希望機器人發送訊息的目標頻道 ID 或使用者 ID。
+This project contains two main services: the Telegram Bot (`main.py`) and the Dispatch System (`dispatch_system.py`).
 
-```python
-# 請將 '@your_channel_or_user' 換成你的目標
-TARGET_CHAT_ID = "@your_channel_or_user"
-```
-檔案內有關於如何獲取 ID 的詳細說明。
+#### A. For the Telegram Bot (`main.py`)
 
-### 4. 執行！
+1.  **Copy the config example**:
+    ```bash
+    cp config.json.example config.json
+    ```
 
-一切就緒後，執行主程式：
+2.  **Edit `config.json`**: Open the file and replace the placeholder tokens with your actual Telegram Bot tokens.
+    ```json
+    {
+        "StormHawk_bot": "YOUR_REAL_BOT_TOKEN_HERE",
+        "StormMedic_bot": "ANOTHER_REAL_BOT_TOKEN_HERE"
+    }
+    ```
+
+3.  **Set the Target Chat**: Open `main.py` and change the `TARGET_CHAT_ID` variable to the user or channel where you want to send messages.
+
+#### B. For the Dispatch System (`dispatch_system.py`)
+
+1.  **Create the environment file**: Copy the example file to create your own local environment configuration.
+    ```bash
+    cp .env.example .env
+    ```
+
+2.  **Edit the `.env` file**: Open the new `.env` file and fill in your credentials. This file is kept private and should not be committed to Git.
+    ```dotenv
+    # Telegram Bot Credentials (for notifications)
+    TELEGRAM_BOT_TOKEN="YOUR_TELEGRAM_BOT_TOKEN"
+    TELEGRAM_CHAT_ID="YOUR_TARGET_CHAT_ID_FOR_NOTIFICATIONS"
+
+    # Payout Account Numbers (e.g., Post Office)
+    POST_OWNER_ACCOUNT="700-00210091602429"
+    POST_TEAM_ACCOUNT="700-xxxxxxxxxx"
+    POST_SYSTEM_ACCOUNT="700-yyyyyyyyyy"
+    ```
+
+### 3. Run the Services
+
+You can run the bot and the dispatch system in separate terminal sessions.
+
+#### To run the Telegram Bot:
 
 ```bash
 python main.py
 ```
+If configured correctly, you will see startup messages in your terminal, and your target chat will receive a notification from each bot.
 
-如果設定正確，你將在終端機看到啟動成功的訊息，並且指定的頻道或使用者會收到來自所有 Bot 的啟動通知。
+#### To run the Dispatch System Server:
 
-## 🔧 未來擴展
+```bash
+python dispatch_system.py
+```
+This will start a Flask server, typically on `http://0.0.0.0:5001`. The server is now ready to accept webhook requests.
 
-你可以基於此模板進行擴展，例如：
-- 增加新的自動化指令。
-- 整合資料庫進行數據儲存。
-- 連接其他 API 實現更複雜的功能。
+## ⚙️ Dispatch System API Endpoints
+
+The `dispatch_system.py` server provides the following API endpoints:
+
+-   `POST /webhook`: The main endpoint to receive new order data. It processes the order, saves it to the database, splits the revenue, and sends a Telegram notification.
+-   `GET /list_payouts`: Returns a JSON list of all payout records that are currently in 'pending' status.
+-   `GET /generate_payout_file`: Generates and returns a `payouts_batch.csv` file, formatted for batch transfers (e.g., at a Post Office), containing all pending payouts.
+
+## 🔧 Future Expansion
+
+You can build upon this template by:
+- Adding new automated commands to the bot.
+- Integrating more third-party APIs into the dispatch system.
+- Developing a frontend interface to interact with the API.

@@ -1,2 +1,7 @@
 # Telegram Bot 核心函式庫
 python-telegram-bot[ext]==20.8
+
+# Dispatch System Dependencies
+Flask>=2.0
+python-dotenv>=0.19
+requests>=2.25
