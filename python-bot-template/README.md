@@ -10,6 +10,7 @@ This template is designed to run in any standard Python environment, including s
 - **Scalable Bot Management**: Easily add or remove bots by editing the `config.json` file without changing the code.
 - **Asynchronous Bot**: The `main.py` bot uses `asyncio` for better performance, suitable for handling multiple bots or high-load tasks.
 - **Dispatch & Revenue System**: A complete Flask-based backend (`dispatch_system.py`) to handle webhooks, process orders, and automatically split revenue.
+- **Core Dispatcher Logic**: Includes a foundational `dispatch_task` function that is called for every new order, ready for future expansion.
 - **Payout Management**: Includes endpoints to list pending payouts and generate CSV files for batch bank transfers.
 - **Easy Deployment**: Comes with a `requirements.txt` file for one-click dependency installation.
 
@@ -64,10 +65,17 @@ This project contains two main services: the Telegram Bot (`main.py`) and the Di
     TELEGRAM_BOT_TOKEN="YOUR_TELEGRAM_BOT_TOKEN"
     TELEGRAM_CHAT_ID="YOUR_TARGET_CHAT_ID_FOR_NOTIFICATIONS"
 
-    # Payout Account Numbers (e.g., Post Office)
-    POST_OWNER_ACCOUNT="700-00210091602429"
-    POST_TEAM_ACCOUNT="700-xxxxxxxxxx"
-    POST_SYSTEM_ACCOUNT="700-yyyyyyyyyy"
+    # --- Payout Account Settings ---
+    # Main account for the system owner (CTBC Bank)
+    BANK_CTBC_CODE="822"
+    BANK_CTBC_ACCOUNT="484540302460"
+
+    # Payout account for teams/developers (Post Office)
+    BANK_POST_CODE="700"
+    BANK_POST_ACCOUNT="00210091602429"
+
+    # Account for system's share of revenue
+    SYSTEM_PAYOUT_ACCOUNT="700-ZZZZZZZZZZ"
     ```
 
 ### 3. Run the Services
@@ -92,7 +100,7 @@ This will start a Flask server, typically on `http://0.0.0.0:5001`. The server i
 
 The `dispatch_system.py` server provides the following API endpoints:
 
--   `POST /webhook`: The main endpoint to receive new order data. It processes the order, saves it to the database, splits the revenue, and sends a Telegram notification.
+-   `POST /webhook`: The main endpoint to receive new order data. It processes the order, saves it to the database, splits the revenue, triggers the core dispatcher, and sends a Telegram notification.
 -   `GET /list_payouts`: Returns a JSON list of all payout records that are currently in 'pending' status.
 -   `GET /generate_payout_file`: Generates and returns a `payouts_batch.csv` file, formatted for batch transfers (e.g., at a Post Office), containing all pending payouts.
 

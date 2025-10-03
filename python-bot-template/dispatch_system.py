@@ -161,12 +161,13 @@ def save_payouts(order_id, revenue_split):
         conn = sqlite3.connect("orders.db")
         cursor = conn.cursor()
 
-        owner_account = os.getenv("POST_OWNER_ACCOUNT")
-        team_account = os.getenv("POST_TEAM_ACCOUNT")
-        system_account = os.getenv("POST_SYSTEM_ACCOUNT")
+        # Get payout accounts from standardized environment variables
+        owner_account = os.getenv("BANK_CTBC_ACCOUNT")
+        team_account = os.getenv("BANK_POST_ACCOUNT")
+        system_account = os.getenv("SYSTEM_PAYOUT_ACCOUNT")
 
         if not all([owner_account, team_account, system_account]):
-            logger.error("Payout accounts (POST_OWNER_ACCOUNT, etc.) are not configured in .env")
+            logger.error("Payout accounts (BANK_CTBC_ACCOUNT, BANK_POST_ACCOUNT, SYSTEM_PAYOUT_ACCOUNT) are not configured in .env")
             return False
 
         payouts_data = [
@@ -186,6 +187,20 @@ def save_payouts(order_id, revenue_split):
     except sqlite3.Error as e:
         logger.error(f"Payout save error: {e}")
         return False
+
+def dispatch_task(order_data):
+    """
+    Placeholder for the core dispatcher logic.
+    For now, it just logs the task that would be dispatched.
+    """
+    team_id = order_data.get('team_id')
+    order_id = order_data.get('order_id')
+    logger.info(f"Dispatching task for order '{order_id}' to team '{team_id}'.")
+    # In the future, this could be expanded to:
+    # - Find available resources for the team.
+    # - Send the task via a message queue or direct API call.
+    # - Update the order status in the database.
+    return True
 
 # --- API Endpoints ---
 @app.route('/webhook', methods=['POST'])
@@ -212,6 +227,9 @@ def webhook_handler():
             revenue_split = calculate_revenue_split(order_data['amount'])
             save_revenue(order_data['order_id'], revenue_split)
             save_payouts(order_data['order_id'], revenue_split)
+
+            # Dispatch the task to the appropriate team
+            dispatch_task(order_data)
 
             message = f"""
 📦 *New Order Received:* `#{order_data['order_id']}`
