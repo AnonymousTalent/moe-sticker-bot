@@ -7,3 +7,12 @@ __debug*
 .DS_Store
 deploy.yaml
 tmp/
+
+# 忽略本地配置文件，避免 Token 外洩
+config.json
+
+# 忽略 Python 快取文件
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
